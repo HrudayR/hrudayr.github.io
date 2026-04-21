@@ -2,6 +2,7 @@
 layout: page
 title: Energy-Efficient FFT Accelerator
 description: 91× energy reduction through iterative architectural optimization of a hardware FFT accelerator on a PicoRV32 SoC
+img: assets/img/fft_layout.png
 importance: 1
 category: work
 ---
