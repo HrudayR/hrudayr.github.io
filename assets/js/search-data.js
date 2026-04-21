@@ -525,7 +525,7 @@ ninja.data = [{
         title: 'LinkedIn',
         section: 'Socials',
         handler: () => {
-          window.open("https://www.linkedin.com/in/www.linkedin.com/in/hruday-r", "_blank");
+          window.open("https://www.linkedin.com/in/hruday-r", "_blank");
         },
       },{
       id: 'light-theme',
