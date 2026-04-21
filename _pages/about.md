@@ -11,7 +11,7 @@ profile:
   more_info: |
     <p>Delft</p>
     <p>Netherlands</p>
-    <p>hruday.r@gmail.com</p>
+    <p><a href="mailto:hruday.r@gmail.com">hruday.r@gmail.com</a></p>
 
 selected_papers: true # includes a list of papers marked as "selected={true}"
 social: true # includes social icons at the bottom of the page
