@@ -411,7 +411,7 @@ ninja.data = [{
           description: "",
           section: "News",},{id: "projects-energy-efficient-fft-accelerator",
           title: 'Energy-Efficient FFT Accelerator',
-          description: "91× energy reduction through iterative architectural optimization of a hardware FFT accelerator on a PicoRV32 SoC",
+          description: "",
           section: "Projects",handler: () => {
               window.location.href = "/projects/fft_accelerator/";
             },},{id: "teachings-data-science-fundamentals",
