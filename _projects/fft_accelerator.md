@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Energy-Efficient FFT Accelerator
-description: 91× energy reduction through iterative architectural optimization of a hardware FFT accelerator on a PicoRV32 SoC
+description:
 img: assets/img/fft_layout.png
 importance: 1
 category: work
@@ -18,6 +18,11 @@ category: work
 The baseline FFT accelerator computes a 32-point Cooley-Tukey FFT in **732 clock cycles** at 12 MHz (61 µs), consuming **24.6 nJ** per chunk. The goal was to reduce energy below the 0.403 mW baseline power target without raising the clock frequency.
 
 Profiling the baseline immediately revealed why it was slow: **8 out of every 9 cycles per butterfly were memory transactions.** Each complex sample required two separate 32-bit reads and two separate 32-bit writes because real and imaginary parts were stored in consecutive words. The FSM had 13 states — one per memory transaction — so the datapath sat idle waiting for each individual read or write to complete before moving on.
+
+{% include figure.liquid path="assets/img/FSM.png" title="FSM comparison" class="img-fluid rounded z-depth-1" %}
+<div class="caption">
+    redesigned FSM
+</div>
 
 ---
 
@@ -67,6 +72,11 @@ Removing 320 multiplications — one of the most power-hungry operations in the 
 With the memory interface widened and twiddle factors gone, the remaining bottleneck was sequential execution: the FSM still processed one butterfly at a time — read, then compute, then write — with each stage waiting for the previous to finish.
 
 The solution was to restructure into a **3-stage pipeline** (READ → COMPUTE → WRITE) running continuously, and split the memory into **two independent 64-bit banks**. The key insight enabling conflict-free dual access is that in the Cooley-Tukey butterfly, the two operand addresses `base + k` and `base + k + half` always differ by `half`, which is a power of two. This guarantees they always land on opposite banks when routed via an XOR bank selector — so both operands can be read (and written) simultaneously with zero arbitration.
+
+{% include figure.liquid path="assets/img/dual_mem.png" title="Dual memory bank" class="img-fluid rounded z-depth-1" %}
+<div class="caption">
+    Dual memory bank
+</div>
 
 The FSM collapsed from 7 states to just **3 states: INIT, RUN, FINISH**, with all butterfly work happening inside a single RUN state that sustains one completed butterfly per clock cycle once the pipeline is filled.
 
