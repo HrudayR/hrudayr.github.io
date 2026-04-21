@@ -10,7 +10,7 @@ profile:
   image_circular: false # crops the image to make it circular
   more_info: |
     <p><em style="font-size: 0.85em; color: gray;">Jack of all trades. Master of None. But oftentimes better than a master of one.</em></p>
-    <p>Delft</p>
+    <p>Delft,</p>
     <p>Netherlands</p>
     <p><a href="mailto:hruday.r@gmail.com">hruday.r@gmail.com</a></p>
 
