@@ -414,6 +414,11 @@ ninja.data = [{
           description: "",
           section: "Projects",handler: () => {
               window.location.href = "/projects/fft_accelerator/";
+            },},{id: "projects-real-time-posterization-filter-on-fpga",
+          title: 'Real-Time Posterization Filter on FPGA',
+          description: "",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/video_processing/";
             },},{id: "teachings-data-science-fundamentals",
           title: 'Data Science Fundamentals',
           description: "This course covers the foundational aspects of data science, including data collection, cleaning, analysis, and visualization. Students will learn practical skills for working with real-world datasets.",
