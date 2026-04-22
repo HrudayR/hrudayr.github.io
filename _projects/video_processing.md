@@ -18,12 +18,7 @@ category: work
 <!--    Suggested caption: "Posterization filter: smooth colour   -->
 <!--    gradients become flat bands with cartoon-like outlines."   -->
 <!-- ============================================================ -->
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        {% include figure.liquid path="assets/img/before_after.png" title="Architecture diagram" class="img-fluid rounded z-depth-1" %}
-        <div class="caption">System architecture</div>
-    </div>
-</div>
+{% include figure.liquid path="assets/img/before_after.png" title="Architecture diagram" class="img-fluid rounded z-depth-1" %}
 
 ### The Problem
 
@@ -55,12 +50,7 @@ Posterization breaks down into five stages:
 <!--    Suggested caption: "End-to-end posterization workflow:    -->
 <!--    two parallel paths combined by the overlay stage."        -->
 <!-- ============================================================ -->
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        {% include figure.liquid path="assets/img/video_pipeline.png" title="Architecture diagram" class="img-fluid rounded z-depth-1" %}
-        <div class="caption">System architecture</div>
-    </div>
-</div>
+{% include figure.liquid path="assets/img/video_pipeline.png" title="Architecture diagram" class="img-fluid rounded z-depth-1" %}
 ---
 
 ### Software Prototype
@@ -83,12 +73,8 @@ To keep up with the 60 fps HDMI pipeline, the design had to hit an **Initiation 
 <!--    (edge detection + colour quantization) merged by a final  -->
 <!--    multiplexer. Line buffers in BRAM feed 3×3 windows."       -->
 <!-- ============================================================ -->
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        {% include figure.liquid path="assets/img/hardware_pipeline.png" title="Architecture diagram" class="img-fluid rounded z-depth-1" %}
-        <div class="caption">System architecture</div>
-    </div>
-</div>
+
+{% include figure.liquid path="assets/img/hardware_pipeline.png" title="Architecture diagram" class="img-fluid rounded z-depth-1" %}
 
 #### Streaming memory: line buffers and sliding windows
 
@@ -130,12 +116,8 @@ After functional verification in the Vitis C simulator, the generated IP was exp
 <!--    Suggested caption: "Vivado block design: the posterization -->
 <!--    IP dropped into the HDMI → VDMA pipeline."                 -->
 <!-- ============================================================ -->
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        {% include figure.liquid path="assets/img/vivado_pipeline.png" title="Architecture diagram" class="img-fluid rounded z-depth-1" %}
-        <div class="caption">System architecture</div>
-    </div>
-</div>
+
+{% include figure.liquid path="assets/img/vivado_pipeline.png" title="Architecture diagram" class="img-fluid rounded z-depth-1" %}
 ---
 
 ### Results
