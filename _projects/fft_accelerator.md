@@ -7,7 +7,7 @@ importance: 1
 category: work
 ---
 
-**Tools:** SystemVerilog · Cadence Genus · Cadence Innovus  
+**Tools:** Verilog · Cadence Genus · Cadence Innovus  
 **Focus:** RTL architecture, synthesis flow, clock gating, physical optimization  
 
 ---
@@ -17,7 +17,7 @@ category: work
 
 ### The Problem
 
-The starting point was a working 32-point Cooley-Tukey FFT accelerator that took **732 clock cycles** at 12 MHz (61 µs) and burned **24.6 nJ** per chunk. The challenge: cut energy as deeply as possible without raising the clock frequency.
+The starting point was a working 32-point Cooley-Tukey FFT accelerator that took **732 clock cycles** at 12 MHz (61 µs) and burned **24.6 nJ** per chunk. The challenge: cut energy as deeply as possible while maintaining precision and functional behaviour.
 
 A quick profile of where the cycles were going made the bottleneck obvious. **8 out of every 9 cycles per butterfly were memory transactions.** Every complex sample needed two separate 32-bit reads and two separate 32-bit writes because the real and imaginary parts lived in consecutive words. The FSM had 13 states — one per memory transaction — and the datapath sat idle through almost all of them. Memory bandwidth, not compute, was the real bottleneck. That insight shaped every decision that followed.
 
@@ -79,14 +79,9 @@ With the architecture locked in, attention shifted to tuning the synthesis and p
 
 - **Integrated Clock Gating:** ICG cells were inserted to disable clock toggling on idle registers. The flow gated **4,481 out of 4,970 flip-flops (90%)**, cutting dynamic power from the clock network directly.
 - **High-Vt Cell Mapping:** Non-critical paths were pushed onto HVT library cells, which trade switching speed for lower leakage. With 33 ns of setup slack at 12 MHz, there was massive headroom to absorb the slower cells without breaking timing.
-- **Power-Driven Innovus Flow:** `optPower` was run pre-CTS, post-CTS, and post-route with `leakageToDynamicRatio 0.5`, letting the tool trade area for power across the full implementation.
 
 ---
 
 ### Final Results
 
 The final design runs at the same 12 MHz as the baseline but completes a chunk in just **84 cycles (7 µs)** instead of 732 cycles (61 µs) — **8.7× faster**. Accelerator power dropped from **0.403 mW to 0.038 mW** (10.5× lower), and energy per chunk fell from **24.6 nJ to 0.269 nJ** — a **91× overall improvement**.
-
-Tracking each step's contribution: operand isolation took the design from 24.6 nJ → 8.5 nJ, the 64-bit memory interface to 3.11 nJ, the twiddle ROM to 1.37 nJ, and dual-port pipelining brought the final figure to **0.269 nJ**. Every step compounded on the last.
-
-The design passed all physical signoff checks — DRC, connectivity, geometry, antenna — at the 596.4 µm × 596.4 µm core area, with positive setup slack of 33.6 ns and hold slack of 0.010 ns. Power numbers were measured with 100% activity annotation coverage, so they reflect real switching behavior rather than estimated averages.
