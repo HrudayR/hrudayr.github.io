@@ -9,7 +9,6 @@ category: work
 
 **Tools:** Vitis HLS · Vivado · Python · OpenCV · Jupyter (PYNQ)  
 **Focus:** HLS design, streaming pipeline architecture, line buffer/sliding window memory, AXI integration  
-**Context:** CESE4090 Reconfigurable Computing Design, TU Delft (Q2 2025/2026)
 
 ---
 
@@ -31,7 +30,7 @@ Posterization made for a strong candidate. It's a non-photorealistic effect that
 - Per-channel colour quantization
 - Two independent processing paths that can run in parallel on the same pixel stream
 
-A quick Python prototype on the ARM Cortex-A9 confirmed why this wasn't a software problem: **1831 ms per frame** — roughly 110× too slow for 60 fps. The bottleneck was pure compute, not memory (peak RAM usage was only 63 MB). That framed the whole design brief: push the per-pixel work into programmable logic and let the CPU just handle configuration.
+A quick Python prototype on the ARM Cortex-A9 confirmed why this wasn't a software problem: **1831 ms per frame** — roughly 110× too slow for 60 fps. The bottleneck was pure compute, not memory (peak RAM usage was only 63 MB).
 
 ---
 
@@ -39,11 +38,11 @@ A quick Python prototype on the ARM Cortex-A9 confirmed why this wasn't a softwa
 
 Posterization breaks down into five stages:
 
-1. **Colour conversion** — convert the RGB input to grayscale, which separates structure from colour for cleaner edge detection.
-2. **Edge detection** — denoise the grayscale with a Gaussian low-pass, then apply Sobel operators and threshold the gradient magnitude to build a binary edge map.
-3. **Smoothing** — apply a 3×3 box filter to each RGB channel to suppress small colour fluctuations before quantizing.
-4. **Quantization** — map each channel from 256 levels down to a small set of discrete levels, producing the flat cartoon-style regions.
-5. **Overlay** — combine the edge map with the quantized colours: edge pixels render as black, everything else keeps its quantized colour.
+1. **Colour conversion.** The RGB input gets converted into a grayscale copy. Colour is fine for the final output, but for finding edges it just gets in the way — a grayscale image keeps only the brightness information, which makes the object outlines much easier to pick out. The original colour is kept around separately for later.
+2. **Edge detection.** The grayscale image is first smoothed with a gentle Gaussian blur to get rid of small noise — without this step, tiny specks of noise would be wrongly flagged as edges. Then the Sobel operator is applied, which looks at how much the brightness changes from one pixel to the next. Wherever brightness changes sharply, that's probably a real edge (like where a tree meets the sky). Pixels with a sharp-enough change are marked as edges; everything else is marked as non-edge. The result is a black-and-white outline map of the image.
+3. **Smoothing.** Meanwhile, on the colour side, each of the red, green, and blue channels gets blurred with a small 3×3 average filter. This washes out tiny colour variations — like subtle skin tones or leaf-to-leaf differences — so that the next step has large, uniform patches of colour to work with instead of noisy pixel-by-pixel variation.
+4. **Quantization.** Each colour channel normally has 256 possible brightness levels. Quantization snaps every pixel to one of just a handful of fixed levels (say, 4 or 8). The effect is like rounding: slightly different shades of blue all get forced to the same blue. This is what produces the characteristic flat, poster-like regions of solid colour instead of smooth gradients.
+5. **Overlay.** Finally, the edge map and the quantized colour image get merged. Any pixel the edge detector flagged becomes pure black, drawing the outlines. Every other pixel keeps its quantized colour. The combination — hard black outlines over flat colour regions — is what gives the output its hand-drawn, cartoon look.
 
 <!-- ============================================================ -->
 <!-- 📷 IMAGE — insert Fig. 2 (Posterization workflow diagram)    -->
@@ -55,9 +54,9 @@ Posterization breaks down into five stages:
 
 ### Software Prototype
 
-Before building anything in hardware, the algorithm ran first in Python with OpenCV to verify it worked end-to-end — grayscale conversion via `cv2.cvtColor`, Gaussian denoising, Sobel derivatives, magnitude thresholding, optional `cv2.dilate` for thicker outlines, box blur per channel, uniform quantization, and a final masking step. Straightforward, but sequential and slow.
+Before building anything in hardware, the algorithm ran first in Python with OpenCV to verify it worked end-to-end — grayscale conversion via `cv2.cvtColor`, Gaussian denoising, Sobel derivatives, magnitude thresholding, box blur per channel, uniform quantization, and a final masking step. Straightforward, but sequential and slow.
 
-Benchmarking 200 frames on the Cortex-A9 gave a **mean latency of 1831 ms** per frame (throughput ≈ 0.55 fps), with P95 and max latencies tight against the mean (1939 ms and 1965 ms). That tight spread was useful diagnostic information: the runtime was stable and consistent, which ruled out OS jitter or background tasks and confirmed the work itself was the bottleneck. Combined with the lean 63.4 MB peak memory, the picture was unambiguous — **compute-bound, not memory-bound**. Exactly the kind of workload hardware offload is designed for.
+Benchmarking 200 frames on the Cortex-A9 gave a **mean latency of 1831 ms** per frame, with a throughput of  ≈ 0.55 fps. Combined with the lean 63.4 MB peak memory, the picture was unambiguous — **compute-bound, not memory-bound**. Exactly the kind of workload hardware offload is designed for.
 
 ---
 
@@ -79,8 +78,6 @@ To keep up with the 60 fps HDMI pipeline, the design had to hit an **Initiation 
 #### Streaming memory: line buffers and sliding windows
 
 The core memory challenge: Sobel, Gaussian, and box filters all need a 3×3 neighbourhood, but the stream only delivers one pixel per cycle. The fix was **line buffers in BRAM** plus **fully-partitioned 3×3 sliding windows in registers**. Each line buffer stores one full image row. When a new pixel arrives, it enters the buffers and older pixels shift through, effectively caching the last few rows of the stream.
-
-On every clock cycle, the 3×3 window slides left — column 0 ← column 1, column 1 ← column 2, column 2 ← freshly-fetched pixels from the input and line buffers. That gives combinational access to a full 3×3 neighbourhood every cycle without stalling.
 
 #### Two parallel paths
 
@@ -122,16 +119,12 @@ After functional verification in the Vitis C simulator, the generated IP was exp
 
 ### Results
 
-The software baseline ran at **1831 ms per frame (0.55 fps)** — about 110× too slow for 60 fps real-time video. Offloading to FPGA dropped mean latency to **16.77 ms per frame** and pushed throughput to **59.64 fps**, essentially hitting the 16.67 ms real-time budget. That's a **~109× speedup**, closing the gap from "impossible in software" to "runs live on HDMI."
+The software baseline ran at **1831 ms per frame (0.55 fps)** — about 110× too slow for 60 fps real-time video. Offloading to FPGA dropped mean latency to **16.77 ms per frame** and pushed throughput to **59.64 fps**, essentially hitting the 16.67 ms real-time budget.
 
-Peak memory dropped from 63.4 MB on the ARM side to just 13.4 MB, since the heavy lifting now happens in on-chip BRAM instead of DDR. Some frames occasionally push slightly past the 16.67 ms target because of VDMA memory-transfer jitter — an artefact of moving full frames through DDR over AXI rather than anything algorithmic — but the design sustains 60 fps playback.
+Peak memory dropped from 63.4 MB on the ARM side to just 13.4 MB, since the heavy lifting now happens in on-chip BRAM instead of DDR.
 
 ### Resource Utilization
 
 The final design fits comfortably within the PYNQ-Z2's Zynq-7020 fabric: roughly **14,016 LUTs** (~13,229 as logic, 787 as memory), **24,391 flip-flops**, **16.5 BRAM tiles**, and **66 DSP blocks**. BRAM usage is dominated by the line buffers (one for grayscale, one for denoised grayscale, three for RGB channels plus the latency-matching buffer), and the DSPs primarily handle the weighted-sum convolutions and the quantization multiply-shift paths.
 
 ---
-
-### Takeaways
-
-The interesting part of this kind of work is that **memory architecture decides whether an algorithm can stream**, not raw compute. The Sobel and blur math are trivial; the engineering was in the line buffers, the sliding windows, and making sure the two parallel paths stayed latency-matched at the merge point. Everything else — the fixed-point tricks, the LUT-based quantization, the OR-based edge thickening — came down to staying inside the one-pixel-per-clock budget without introducing stalls.
