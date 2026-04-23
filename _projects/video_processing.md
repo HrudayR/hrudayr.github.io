@@ -125,6 +125,6 @@ Peak memory dropped from 63.4 MB on the ARM side to just 13.4 MB, since the heav
 
 ### Resource Utilization
 
-The final design fits comfortably within the PYNQ-Z2's Zynq-7020 fabric: roughly **14,016 LUTs** (~13,229 as logic, 787 as memory), **24,391 flip-flops**, **16.5 BRAM tiles**, and **66 DSP blocks**. BRAM usage is dominated by the line buffers (one for grayscale, one for denoised grayscale, three for RGB channels plus the latency-matching buffer), and the DSPs primarily handle the weighted-sum convolutions and the quantization multiply-shift paths.
+The final design fits comfortably within the PYNQ-Z2's Zynq-7020 fabric: roughly **14,016 LUTs**, **24,391 flip-flops**, **16.5 BRAM tiles**, and **66 DSP blocks**. BRAM usage is dominated by the line buffers (one for grayscale, one for denoised grayscale, three for RGB channels plus the latency-matching buffer), and the DSPs primarily handle the weighted-sum convolutions and the quantization multiply-shift paths.
 
 ---
