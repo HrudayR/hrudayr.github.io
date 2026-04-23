@@ -93,15 +93,6 @@ Splitting the design into two datapaths operating on the same incoming pixel was
 
 Because each 3×3 filter introduces a one-line delay, the grayscale path (Gaussian → Sobel = two stacked filters) ends up **two lines delayed** relative to the input, while the RGB path (one box filter) is only one line delayed. To keep the edge overlay aligned with the correct colour pixel, the RGB path needed an **extra line buffer** — a small cost in BRAM to preserve correctness at the merge point.
 
-#### Fixed-point arithmetic and LUT tricks
-
-Several choices were made to avoid expensive hardware operations:
-
-- **Grayscale coefficients** (`Y = 0.299R + 0.587G + 0.114B`) were approximated as `(77R + 150G + 29B) >> 8`, eliminating floating-point.
-- **Gaussian kernel** used integer weights `[1 2 1; 2 4 2; 1 2 1]` with a 4-bit right-shift divisor.
-- **Sobel gradient magnitude** was approximated as `|Gx| + |Gy|` instead of `sqrt(Gx² + Gy²)`, skipping the square-root block entirely.
-- **Quantization** replaced runtime division with **precomputed lookup tables** for step sizes and inverse step factors, using multiply-and-shift with a small rounding correction.
-
 ---
 
 ### Integration Flow
